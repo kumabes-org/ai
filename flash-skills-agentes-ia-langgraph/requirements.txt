@@ -1,0 +1,8 @@
+google-ai-generativelanguage
+langchain-google-genai
+langchain
+langchain-pinecone
+langchain-community
+langgraph
+arxiv
+python-dotenv
