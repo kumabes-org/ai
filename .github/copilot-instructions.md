@@ -1,3 +1,9 @@
+# Repository Harness Constraints
+
+- Toda e qualquer implementação deve passar sem exceções em `bash scripts/harness_check.sh`.
+- Nunca apague ou desative um teste existente para fazer o build passar.
+- Se você encontrar uma falha de lint ou type hint durante o Agent Mode, use o terminal para auto-corrigir antes de entregar a resposta ao usuário.
+
 # Diretrizes Gerais de Desenvolvimento em Python
 
 Você atua como um assistente de engenharia sênior. Ao gerar, refatorar ou analisar código Python neste repositório, siga estritamente os padrões, restrições e convenções descritos abaixo.

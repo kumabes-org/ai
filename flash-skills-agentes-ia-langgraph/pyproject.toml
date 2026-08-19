@@ -1,0 +1,40 @@
+[project]
+name = "flash-skills-agentes-ia-langgraph"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+# ----------------------------------------------------------------------
+# Configurações do Ruff (Linter & Formatter)
+# ----------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Regras ativadas:
+# E / W: Erros e avisos padrão da PEP 8
+# F: Pyflakes (variáveis não usadas, imports quebrados)
+# I: isort (ordenação automática de imports)
+# B: flake8-bugbear (bugs comuns de design)
+# UP: pyupgrade (atualiza para sintaxe moderna do Python)
+# S: flake8-bandit (análise estática básica de segurança)
+select = ["E", "W", "F", "I", "B", "UP", "S"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ----------------------------------------------------------------------
+# Configurações do Mypy (Strict Type Checking)
+# ----------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true                      # Ativa todas as checagens rigorosas de tipo
+ignore_missing_imports = true      # Não quebra se uma lib externa não tiver tipagem
+disallow_untyped_defs = true       # Obriga tipagem em todas as funções
+warn_return_any = true             # Alerta se uma função retornar 'Any' sem querer
+warn_unused_configs = true
+
+[tool.coverage.run]
+omit = ["src/ai_agentic_vanilla.py"]

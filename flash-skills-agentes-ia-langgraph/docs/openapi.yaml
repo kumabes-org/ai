@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: Insurance Policy & Claims Core API
+  description: |
+    API central de gestão de apólices e avaliação automatizada de sinistros.
+    Projetada sob a metodologia **Spec-Driven Development (SDD)** para servir como
+    Single Source of Truth para desenvolvimento assistido por IA e validação via Harness.
+  version: 1.0.0
+  contact:
+    name: Squad de Arquitetura e Engenharia de Plataforma
+    email: arquitetura-seguros@empresa.com.br
+
+servers:
+  - url: https://api.seguros.empresa.com.br/v1
+    description: Servidor de Produção
+  - url: http://localhost:8000/v1
+    description: Ambiente de Desenvolvimento Local / Mock
+
+paths:
+  /health:
+    get:
+      summary: Health Check do Serviço
+      description: Endpoint para sondas de liveness/readiness de orquestradores (Kubernetes).
+      operationId: getHealthStatus
+      responses:
+        '200':
+          description: Serviço operacional.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+
+  /policies:
+    post:
+      summary: Emitir nova Apólice de Seguro
+      description: Realiza a subscrição e emissão de uma apólice residencial, auto ou vida.
+      operationId: createPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+      responses:
+        '201':
+          description: Apólice emitida com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '422':
+          $ref: '#/components/responses/422UnprocessableEntity'
+
+  /policies/{policy_id}:
+    get:
+      summary: Consultar Apólice por ID
+      description: Retorna os detalhes, coberturas e vigência de uma apólice existente.
+      operationId: getPolicyById
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          description: Identificador único da apólice (UUID v4).
+          schema:
+            type: string
+            format: uuid
+            example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+      responses:
+        '200':
+          description: Dados da apólice recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /claims/evaluate:
+    post:
+      summary: Avaliar Elegibilidade de Sinistro (Engine de Regras / IA)
+      description: |
+        Avalia se um evento/sinistro é elegível a indenização com base nos prazos de carência,
+        limite de cobertura e histórico cadastrado na apólice.
+      operationId: evaluateClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimEvaluationRequest'
+      responses:
+        '200':
+          description: Avaliação concluída com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimEvaluationResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          $ref: '#/components/responses/422UnprocessableEntity'
+
+components:
+  responses:
+    400BadRequest:
+      description: Requisição inválida ou sintaxe incorreta.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    404NotFound:
+      description: Recurso solicitado não encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    422UnprocessableEntity:
+      description: Erro de validação semântica nos campos informados.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [UP, DEGRADED, DOWN]
+          example: "UP"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-18T21:00:00Z"
+
+    CoverageType:
+      type: string
+      description: Tipos de coberturas suportadas pela seguradora.
+      enum:
+        - RESIDENTIAL_ELECTRICAL_DAMAGE
+        - RESIDENTIAL_FIRE
+        - AUTO_COLLISION
+        - AUTO_THIRD_PARTY
+        - LIFE_NATURAL_DEATH
+        - LIFE_ACCIDENTAL_DEATH
+      example: "RESIDENTIAL_ELECTRICAL_DAMAGE"
+
+    PolicyStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - SUSPENDED
+        - CANCELED
+        - EXPIRED
+      example: "ACTIVE"
+
+    CreatePolicyRequest:
+      type: object
+      required:
+        - customer_id
+        - coverage_type
+        - coverage_limit
+        - start_date
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
+        coverage_type:
+          $ref: '#/components/schemas/CoverageType'
+        coverage_limit:
+          type: number
+          format: double
+          minimum: 1000.00
+          maximum: 5000000.00
+          description: Limite máximo segurado em Reais (BRL).
+          example: 50000.00
+        grace_period_days:
+          type: integer
+          minimum: 0
+          default: 30
+          description: Período de carência em dias corridos após a emissão.
+          example: 30
+        start_date:
+          type: string
+          format: date
+          example: "2026-08-01"
+
+    PolicyResponse:
+      type: object
+      required:
+        - policy_id
+        - customer_id
+        - coverage_type
+        - coverage_limit
+        - grace_period_days
+        - status
+        - start_date
+        - created_at
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+          example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+        customer_id:
+          type: string
+          format: uuid
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
+        coverage_type:
+          $ref: '#/components/schemas/CoverageType'
+        coverage_limit:
+          type: number
+          format: double
+          example: 50000.00
+        grace_period_days:
+          type: integer
+          example: 30
+        status:
+          $ref: '#/components/schemas/PolicyStatus'
+        start_date:
+          type: string
+          format: date
+          example: "2026-08-01"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-08-01T10:30:00Z"
+
+    ClaimEvaluationRequest:
+      type: object
+      required:
+        - policy_id
+        - incident_date
+        - claimed_amount
+        - description
+      properties:
+        policy_id:
+          type: string
+          format: uuid
+          example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+        incident_date:
+          type: string
+          format: date-time
+          description: Data e hora exata em que o sinistro ocorreu.
+          example: "2026-08-15T14:20:00Z"
+        claimed_amount:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Valor solicitado pelo segurado para ressarcimento.
+          example: 4500.00
+        description:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          description: Relato detalhado das circunstâncias do sinistro.
+          example: "Queda de raio na rede elétrica que danificou dois aparelhos de ar-condicionado."
+
+    ClaimEvaluationDecision:
+      type: string
+      enum:
+        - APPROVED
+        - REJECTED
+        - MANUAL_AUDIT_REQUIRED
+      example: "APPROVED"
+
+    ClaimEvaluationResponse:
+      type: object
+      required:
+        - evaluation_id
+        - policy_id
+        - decision
+        - approved_amount
+        - reason
+        - evaluated_at
+      properties:
+        evaluation_id:
+          type: string
+          format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        policy_id:
+          type: string
+          format: uuid
+          example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+        decision:
+          $ref: '#/components/schemas/ClaimEvaluationDecision'
+        approved_amount:
+          type: number
+          format: double
+          description: Valor aprovado após aplicação de franquias e limites contratuais.
+          example: 4500.00
+        reason:
+          type: string
+          description: Justificativa contratual e técnica da decisão tomada.
+          example: "Sinistro ocorrido após o término do período de carência (30 dias) e dentro do limite da apólice."
+        clause_references:
+          type: array
+          items:
+            type: string
+          example: ["Cláusula 4.2 - Danos Elétricos", "Cláusula 8.1 - Carência"]
+        evaluated_at:
+          type: string
+          format: date-time
+          example: "2026-08-18T21:15:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - timestamp
+      properties:
+        code:
+          type: string
+          description: Código interno de erro para observabilidade.
+          example: "GRACE_PERIOD_VIOLATION"
+        message:
+          type: string
+          description: Mensagem descritiva do erro sanitizada.
+          example: "O sinistro ocorreu durante o período de carência da apólice."
+        details:
+          type: array
+          items:
+            type: string
+          example: ["Data do evento: 2026-08-10", "Fim da carência: 2026-08-31"]
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-18T21:15:00Z"
