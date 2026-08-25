@@ -3,20 +3,20 @@
 ## Fluxograma
 ```mermaid
 graph TD
-    Start([🎯 Nova Necessidade / Tarefa com IA]) --> Q_Ext{Exige conectar com<br>sistemas externos?}
+    Start(["🎯 Nova Necessidade / Tarefa com IA"]) --> Q_Ext{"Exige conectar com<br>sistemas externos?"}
 
     %% Ramo Externo
-    Q_Ext -- SIM --> Q_MCP{Precisa ser agnóstico<br>e padronizado entre<br>várias IDEs/clientes?}
+    Q_Ext -- SIM --> Q_MCP{"Precisa ser agnóstico<br>e padronizado entre<br>várias IDEs/clientes?"}
     Q_MCP -- SIM --> MCP["🔌 MCP (Model Context Protocol)<br><i>Ex: GitHub, Datadog, Postgres</i>"]
     Q_MCP -- NÃO --> Tool["🛠️ Tool / Function Calling<br><i>Ex: @tool write_file, run_pytest</i>"]
 
     %% Ramo Interno / Cognitivo
-    Q_Ext -- NÃO --> Q_Prompt{É apenas um ajuste<br>pontual ou formatação?}
+    Q_Ext -- NÃO --> Q_Prompt{"É apenas um ajuste<br>pontual ou formatação?"}
     Q_Prompt -- SIM --> Prompt["✍️ Prompt Engineering<br><i>Ex: Zero-shot, Few-shot, CoT</i>"]
-    Q_Prompt -- NÃO --> Q_Skill{É um procedimento<br>prescritivo com checklist<br>e template (SOP)?}
+    Q_Prompt -- NÃO --> Q_Skill{"É um procedimento<br>prescritivo com checklist<br>e template (SOP)?"}
     
     Q_Skill -- SIM --> Skill["📜 Skill (SKILL.md)<br><i>Ex: /adr-generator, /audit-k8s</i>"]
-    Q_Skill -- NÃO --> Q_Agent{Exige assumir papel,<br>tom de voz e limites<br>de atuação profissional?}
+    Q_Skill -- NÃO --> Q_Agent{"Exige assumir papel,<br>tom de voz e limites<br>de atuação profissional?"}
     
     Q_Agent -- SIM --> Agent["👤 Agent / Persona (*.agent.md)<br><i>Ex: Solution Architect, Senior Dev</i>"]
     Q_Agent -- NÃO --> Multi["🤖 Multi-Agent / Grafo Autônomo<br><i>Ex: LangGraph Squad (Supervisor + Dev + SRE)</i>"]
