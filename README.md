@@ -1,5 +1,36 @@
 # Everything about artificial intelligence
 
+## Fluxograma
+```mermaid
+graph TD
+    Start([🎯 Nova Necessidade / Tarefa com IA]) --> Q_Ext{Exige conectar com<br>sistemas externos?}
+
+    %% Ramo Externo
+    Q_Ext -- SIM --> Q_MCP{Precisa ser agnóstico<br>e padronizado entre<br>várias IDEs/clientes?}
+    Q_MCP -- SIM --> MCP["🔌 MCP (Model Context Protocol)<br><i>Ex: GitHub, Datadog, Postgres</i>"]
+    Q_MCP -- NÃO --> Tool["🛠️ Tool / Function Calling<br><i>Ex: @tool write_file, run_pytest</i>"]
+
+    %% Ramo Interno / Cognitivo
+    Q_Ext -- NÃO --> Q_Prompt{É apenas um ajuste<br>pontual ou formatação?}
+    Q_Prompt -- SIM --> Prompt["✍️ Prompt Engineering<br><i>Ex: Zero-shot, Few-shot, CoT</i>"]
+    Q_Prompt -- NÃO --> Q_Skill{É um procedimento<br>prescritivo com checklist<br>e template (SOP)?}
+    
+    Q_Skill -- SIM --> Skill["📜 Skill (SKILL.md)<br><i>Ex: /adr-generator, /audit-k8s</i>"]
+    Q_Skill -- NÃO --> Q_Agent{Exige assumir papel,<br>tom de voz e limites<br>de atuação profissional?}
+    
+    Q_Agent -- SIM --> Agent["👤 Agent / Persona (*.agent.md)<br><i>Ex: Solution Architect, Senior Dev</i>"]
+    Q_Agent -- NÃO --> Multi["🤖 Multi-Agent / Grafo Autônomo<br><i>Ex: LangGraph Squad (Supervisor + Dev + SRE)</i>"]
+
+    %% Estilos Visuais
+    classDef decision fill:#1E293B,stroke:#64748B,stroke-width:2px,color:#F8FAFC;
+    classDef outcome fill:#0F172A,stroke:#38BDF8,stroke-width:2px,color:#38BDF8;
+    classDef startNode fill:#0284C7,stroke:#0284C7,stroke-width:2px,color:#FFFFFF;
+
+    class Start startNode;
+    class Q_Ext,Q_MCP,Q_Prompt,Q_Skill,Q_Agent decision;
+    class MCP,Tool,Prompt,Skill,Agent,Multi outcome;
+```
+
 ## Some Concepts
 
 ### O que é um modelo de IA?
@@ -27,3 +58,43 @@ python -m venv .venv
 source .venv/Scripts/activate
 pip install -r requirements.txt
 ```
+
+## Universal Directory Structure (.ai/ or .agent/)
+```
+meu-projeto/
+├── .agent/                      # Pasta agnóstica centralizada
+│   ├── rules/                   # Regras globais de engenharia
+│   │   ├── code-standards.md
+│   │   └── security.md
+│   ├── personas/                # Definição dos agentes
+│   │   ├── architect.md
+│   │   ├── developer.md
+│   │   └── product-manager.md
+│   └── skills/                  # Procedimentos e runbooks
+│       ├── run-tests/
+│       │   └── SKILL.md
+│       └── pr-review/
+│           └── SKILL.md
+│
+├── .mcp/
+│   └── config.json              # Configuração agnóstica de servidores MCP
+│
+├── AGENTS.md                    # Ponto de entrada universal para qualquer agente
+│
+# Bridges / Links Simbólicos para ferramentas específicas:
+├── .cursorrules                 # -> Aponta para .agent/rules/code-standards.md
+├── .github/
+│   ├── copilot-instructions.md  # -> Aponta para .agent/rules/code-standards.md
+│   └── skills/                  # -> Link ou cópia de .agent/skills/
+└── CLAUDE.md                    # -> Aponta para AGENTS.md
+```
+
+
+|Skill	                                |Escopo Principal	    |Impacto Organizacional|
+|-------------|-------------|-------------|
+|adr-generator	                        |Arquitetura de Software|Governança técnica e histórico de decisões transparente.|
+|k8s-platform-policy-guard	            |Platform Engineering	|Redução drástica de falhas de deploy e vulnerabilidades em cluster.|
+|slo-datadog-monitor-designer	        |SRE & Operações	    |Padronização de observabilidade sem esforço manual das squads.|
+|iac-security-and-finops-auditor	    |Cloud / DevOps	        |Segurança em camadas e controle de custos de infraestrutura.|
+|api-contract-breaking-change-detector	|Integrações / SDD	    |Eliminação de indisponibilidades por incompatibilidade de contratos.|
+|incident-postmortem-copilot	        |Cultura de Engenharia	|Resiliência sistêmica contínua e aprendizado pós-falha.|
